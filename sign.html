@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signature</title>
+  <style>
+    .wrapper {
+      position: relative;
+      width: 600px;
+      height: 300px;
+      border: 2px solid #000;
+      margin-bottom: 10px;
+    }
+
+    .signature-pad {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 600px;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Draw Your Signature</h1>
+
+  <div class="wrapper">
+    <canvas id="signature-pad" class="signature-pad" width="600" height="300"></canvas>
+  </div>
+
+  <div>
+    <button id="save-png">Save as PNG</button>
+    <button id="clear">Clear</button>
+  </div>
+
+  <h3 id="file-name"></h3>
+  <img id="signature-image" style="display: none;">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
+  <script>
+    var signaturePad = new SignaturePad(document.getElementById('signature-pad'), {
+      backgroundColor: 'rgba(255, 255, 255, 0)',
+      penColor: 'rgb(0, 0, 0)'
+    });
+
+    var canvas = document.getElementById('signature-pad');
+    var savePNGButton = document.getElementById('save-png');
+    var cancelButton = document.getElementById('clear');
+    var fileName = document.getElementById('file-name');
+    var signatureImage = document.getElementById('signature-image');
+
+    savePNGButton.addEventListener('click', function (event) {
+      saveSignatureAsPNG();
+    });
+
+    cancelButton.addEventListener('click', function (event) {
+      signaturePad.clear();
+      fileName.textContent = '';
+      signatureImage.style.display = 'none';
+    });
+
+    function saveSignatureAsPNG() {
+      var context = canvas.getContext('2d');
+      var watermarkText = getFormattedDate();
+      context.font = '12px Arial';
+      context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      context.textAlign = 'center';
+
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height / 2;
+      
+      var textWidth = context.measureText(watermarkText).width;
+      var textX = centerX - textWidth / 2;
+      var textY = centerY;
+      
+      context.fillText(watermarkText, textX, textY);
+
+      var dataURL = canvas.toDataURL();
+      var lastName = prompt('Please enter your last name:');
+      if (lastName !== null) {
+        var fileNameText = lastName + '_sign.png';
+        var link = document.createElement('a');
+        link.href = dataURL;
+        link.download = fileNameText;
+        link.click();
+        fileName.textContent = 'File Name: ' + fileNameText;
+        signatureImage.src = dataURL;
+        signatureImage.style.display = 'block';
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+    
+    function getFormattedDate() {
+      var now = new Date();
+      var year = now.getFullYear();
+      var month = now.getMonth() + 1;
+      var day = now.getDate();
+      var hours = now.getHours();
+      var minutes = now.getMinutes();
+      var seconds = now.getSeconds();
+      
+      return year + '-' + padNumber(month) + '-' + padNumber(day) + ' ' + padNumber(hours) + ':' + padNumber(minutes) + ':' + padNumber(seconds);
+    }
+    
+    function padNumber(number) {
+      return (number < 10 ? '0' : '') + number;
+    }
+  </script>
+</body>
+</html>
